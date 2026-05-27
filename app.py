@@ -33,7 +33,7 @@ try:
 except FileNotFoundError:
     st.error(
         "No data found in `data/raw/`. Run `python download_data.py` first "
-        "(see README for the Kaggle token setup)."
+        "to pull the coin CSVs from Yahoo Finance."
     )
     st.stop()
 
@@ -97,9 +97,12 @@ with c3:
     worst = mdds.idxmin()
     st.metric("Worst drawdown", f"{mdds.min()*100:.0f}%", f"{worst}")
 with c4:
-    avg_corr = U.avg_pairwise_corr(r.dropna(), window=min(corr_window, max(len(r)-1, 10)))
-    st.metric("Mean pairwise corr", f"{avg_corr.mean():.2f}",
-              f"max {avg_corr.max():.2f}" if not avg_corr.dropna().empty else "")
+    if len(coins) >= 2:
+        avg_corr = U.avg_pairwise_corr(r.dropna(), window=min(corr_window, max(len(r)-1, 10)))
+        st.metric("Mean pairwise corr", f"{avg_corr.mean():.2f}",
+                  f"max {avg_corr.max():.2f}" if not avg_corr.dropna().empty else "")
+    else:
+        st.metric("Mean pairwise corr", "n/a", "need 2+ coins")
 
 
 st.markdown("---")
@@ -191,8 +194,6 @@ with cc2:
         fig = go.Figure()
         fig.add_trace(go.Scatter(x=apc.index, y=apc.values, mode="lines",
                                  line=dict(color="black", width=1.5)))
-        # event shading
-        ymin, ymax = apc.min(), apc.max()
         for label, (s, e) in U.EVENTS.items():
             fig.add_vrect(x0=s, x1=e, fillcolor="red", opacity=0.08, line_width=0,
                           annotation_text=label, annotation_position="top left",
@@ -218,7 +219,6 @@ with rc1:
     if "Bitcoin" in p.columns:
         btc = p["Bitcoin"].dropna()
         regime = U.label_regimes(btc)
-        regime_num = regime.map({"bull": 0, "bear": 1, "crisis": 2})
 
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
                             row_heights=[0.75, 0.25], vertical_spacing=0.04)
@@ -268,7 +268,6 @@ with rc2:
 
 st.markdown("---")
 st.caption(
-    "Built with pandas, Plotly and Streamlit. Data from Kaggle "
-    "(`sudalairajkumar/cryptocurrencypricehistory`). "
-    "Not investment advice."
+    "Built with pandas, Plotly and Streamlit. Data pulled from Yahoo Finance "
+    "via the `yfinance` package. Not investment advice."
 )

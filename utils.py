@@ -38,10 +38,10 @@ EVENTS = {
 # ---------- loading ---------------------------------------------------------
 
 def load_coin(name: str) -> pd.DataFrame:
-    """Load one coin CSV from the Kaggle dump and normalize the index."""
+    """Load one coin's daily OHLCV CSV from data/raw and normalize the index."""
     path = RAW / f"coin_{name}.csv"
     df = pd.read_csv(path)
-    # Kaggle file has a SNo column we don't need
+    # Some sources (the legacy Kaggle CSVs) include an SNo column. Drop if present.
     df = df.drop(columns=[c for c in ("SNo",) if c in df.columns])
     df["Date"] = pd.to_datetime(df["Date"], utc=True).dt.tz_localize(None).dt.normalize()
     return df.set_index("Date").sort_index()
@@ -100,16 +100,22 @@ def calmar(prices, periods: int = 365):
 # ---------- market structure -----------------------------------------------
 
 def avg_pairwise_corr(returns: pd.DataFrame, window: int = 60) -> pd.Series:
-    """Average pairwise correlation across all coins on a rolling window."""
-    # Doing this row-wise on a rolling object is slow. Build it manually.
+    """Average pairwise correlation across all coins on a rolling window.
+
+    With fewer than 2 columns the metric is undefined, so we just return an
+    all-NaN series rather than warn on empty np.nanmean calls.
+    """
     idx = returns.index
     out = pd.Series(index=idx, dtype=float)
     arr = returns.values
     n_obs, n_assets = arr.shape
+    if n_assets < 2:
+        return out
+    # Doing this row-wise on a rolling object is slow. Build it manually.
+    iu = np.triu_indices(n_assets, k=1)
     for i in range(window, n_obs):
         block = arr[i - window:i]
         c = pd.DataFrame(block).corr().values
-        iu = np.triu_indices(n_assets, k=1)
         out.iloc[i] = np.nanmean(c[iu])
     return out
 
