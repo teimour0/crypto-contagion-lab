@@ -34,6 +34,9 @@ A bunch of stuff, but the things I'd actually talk about in an interview:
 - The three crashes I dug into all looked different. COVID was every coin dumping on the same day. Luna was a contagion radiating out from one protocol's design failure. FTX was step-function drops at news triggers with magnitude scaling with FTX exposure.
 - Daily ARIMA on BTC returns hit 51% directional accuracy in walk-forward backtest. Naive 7-day mean was 47.5%. Neither is enough to trade on after fees.
 
+<img width="2528" height="1188" alt="image" src="https://github.com/user-attachments/assets/651d2747-b55b-4a01-9b6b-421a81ff9d53" />
+
+
 ## Setup
 
 Python 3.10 or newer.
@@ -80,6 +83,9 @@ There are some shortcuts that come up a lot in crypto portfolio projects, and I 
 - No 252 trading days for an asset that trades 7 days a week.
 
 Each of those buries the real result.
+
+<img width="2253" height="1027" alt="image" src="https://github.com/user-attachments/assets/ec3e46d8-6f83-41fd-82fd-222a675c0c8a" />
+
 
 ## Data caveats
 
